@@ -1,0 +1,1275 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="description" content="Proposta técnica de arquitetura normativa e governança para a Escola Nacional do Judiciário — ENAJU.">
+  <meta name="theme-color" content="#082733">
+  <title>Governança ENAJU · Proposta de arquitetura normativa</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --navy-950: #04141b;
+      --navy-900: #08232d;
+      --navy-850: #0a2b37;
+      --navy-800: #103744;
+      --navy-700: #175064;
+      --paper: #f3f7f5;
+      --ink: #eaf4f1;
+      --muted: #a9c0c1;
+      --green: #55d39a;
+      --green-soft: #b5f2d5;
+      --amber: #f5bd64;
+      --amber-soft: #ffe1a7;
+      --blue: #71c9e8;
+      --line: rgba(214, 238, 233, .17);
+      --surface: rgba(16, 55, 68, .68);
+      --surface-strong: rgba(18, 64, 78, .9);
+      --shadow: 0 24px 70px rgba(0, 0, 0, .25);
+      --radius: 1.15rem;
+      --content: 1180px;
+      --status-height: 2.55rem;
+      --controls-height: 4.6rem;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-synthesis: none;
+    }
+
+    * { box-sizing: border-box; }
+
+    html { background: var(--navy-950); }
+
+    body {
+      margin: 0;
+      min-width: 280px;
+      min-height: 100dvh;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at 14% 5%, rgba(85, 211, 154, .12), transparent 28rem),
+        radial-gradient(circle at 89% 82%, rgba(113, 201, 232, .11), transparent 32rem),
+        var(--navy-950);
+      overflow: hidden;
+    }
+
+    a { color: var(--green-soft); text-underline-offset: .22em; }
+    a:hover { color: #fff; }
+
+    button, a { -webkit-tap-highlight-color: transparent; }
+
+    :focus-visible {
+      outline: 3px solid var(--amber);
+      outline-offset: 4px;
+      border-radius: .25rem;
+    }
+
+    .skip-link {
+      position: fixed;
+      z-index: 100;
+      top: .65rem;
+      left: .75rem;
+      padding: .7rem 1rem;
+      color: #08232d;
+      background: var(--amber-soft);
+      border-radius: .55rem;
+      font-weight: 800;
+      transform: translateY(-180%);
+      transition: transform .18s ease;
+    }
+
+    .skip-link:focus { transform: translateY(0); }
+
+    .proposal-status {
+      position: fixed;
+      z-index: 40;
+      inset: 0 0 auto;
+      min-height: var(--status-height);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: .5rem 3.5rem .5rem 1rem;
+      background: #f5bd64;
+      color: #102d37;
+      font-size: clamp(.72rem, 1.4vw, .86rem);
+      line-height: 1.2;
+      font-weight: 850;
+      letter-spacing: .025em;
+      text-align: center;
+    }
+
+    .progress-track {
+      position: fixed;
+      z-index: 42;
+      top: calc(var(--status-height) - 3px);
+      left: 0;
+      width: 100%;
+      height: 4px;
+      background: rgba(4, 20, 27, .23);
+    }
+
+    .progress-fill {
+      width: 6.25%;
+      height: 100%;
+      background: var(--green);
+      transform-origin: left center;
+      transition: width .28s ease;
+    }
+
+    .deck {
+      min-height: 100dvh;
+    }
+
+    .slide {
+      position: relative;
+      width: 100%;
+      min-height: 100dvh;
+      height: 100dvh;
+      padding:
+        max(calc(var(--status-height) + clamp(2rem, 5vh, 4.5rem)), env(safe-area-inset-top))
+        max(clamp(1.1rem, 5vw, 5rem), env(safe-area-inset-right))
+        max(calc(var(--controls-height) + clamp(1.35rem, 3vh, 2.4rem)), env(safe-area-inset-bottom))
+        max(clamp(1.1rem, 5vw, 5rem), env(safe-area-inset-left));
+      overflow-x: hidden;
+      overflow-y: auto;
+      overscroll-behavior: contain;
+      scrollbar-color: var(--navy-700) transparent;
+    }
+
+    .slide[hidden] { display: none; }
+
+    .slide::before {
+      content: "";
+      position: absolute;
+      inset: 10% auto auto 0;
+      width: .35rem;
+      height: min(22vh, 10rem);
+      background: linear-gradient(var(--green), var(--blue));
+      border-radius: 0 2rem 2rem 0;
+      opacity: .75;
+    }
+
+    .slide-inner {
+      width: min(100%, var(--content));
+      min-height: 100%;
+      margin-inline: auto;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: clamp(1.15rem, 3vh, 2.25rem);
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: .55rem;
+      margin: 0 0 .7rem;
+      color: var(--green-soft);
+      font-size: clamp(.72rem, 1.3vw, .9rem);
+      line-height: 1.25;
+      font-weight: 850;
+      letter-spacing: .14em;
+      text-transform: uppercase;
+    }
+
+    .eyebrow::before {
+      content: "";
+      width: 1.65rem;
+      height: 2px;
+      background: var(--green);
+    }
+
+    h1, h2, h3, p { margin-top: 0; }
+
+    h1 {
+      max-width: 14ch;
+      margin-bottom: 1rem;
+      font-size: clamp(2.45rem, 7vw, 6.8rem);
+      line-height: .96;
+      letter-spacing: -.055em;
+      text-wrap: balance;
+    }
+
+    h2 {
+      max-width: 21ch;
+      margin-bottom: 0;
+      font-size: clamp(2rem, 5vw, 4.75rem);
+      line-height: 1.02;
+      letter-spacing: -.04em;
+      text-wrap: balance;
+    }
+
+    h3 {
+      margin-bottom: .5rem;
+      color: #fff;
+      font-size: clamp(1rem, 2vw, 1.35rem);
+      line-height: 1.2;
+    }
+
+    p, li, td, th, dd, dt {
+      font-size: clamp(.91rem, 1.5vw, 1.08rem);
+      line-height: 1.52;
+    }
+
+    p:last-child, ul:last-child, ol:last-child { margin-bottom: 0; }
+
+    .lead {
+      max-width: 72ch;
+      color: #cfdfdd;
+      font-size: clamp(1.06rem, 2vw, 1.45rem);
+      line-height: 1.5;
+    }
+
+    .accent { color: var(--green-soft); }
+    .accent-amber { color: var(--amber-soft); }
+    .muted { color: var(--muted); }
+    .small { font-size: clamp(.76rem, 1.2vw, .9rem); }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(12, minmax(0, 1fr));
+      gap: clamp(.75rem, 1.8vw, 1.35rem);
+      align-items: stretch;
+    }
+
+    .col-3 { grid-column: span 3; }
+    .col-4 { grid-column: span 4; }
+    .col-5 { grid-column: span 5; }
+    .col-6 { grid-column: span 6; }
+    .col-7 { grid-column: span 7; }
+    .col-8 { grid-column: span 8; }
+    .col-12 { grid-column: 1 / -1; }
+
+    .card {
+      position: relative;
+      padding: clamp(1rem, 2.4vw, 1.65rem);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: linear-gradient(145deg, rgba(18, 64, 78, .82), rgba(8, 35, 45, .74));
+      box-shadow: var(--shadow);
+    }
+
+    .card.green { border-top: 3px solid var(--green); }
+    .card.amber { border-top: 3px solid var(--amber); }
+    .card.blue { border-top: 3px solid var(--blue); }
+
+    .number {
+      display: inline-flex;
+      min-width: 2rem;
+      height: 2rem;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: .85rem;
+      padding-inline: .55rem;
+      border-radius: 999px;
+      color: #06232d;
+      background: var(--green);
+      font-size: .8rem;
+      font-weight: 900;
+      letter-spacing: .05em;
+    }
+
+    .number.amber { background: var(--amber); }
+    .number.blue { background: var(--blue); }
+
+    .clean-list {
+      margin: .65rem 0 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .clean-list li {
+      position: relative;
+      padding: .48rem 0 .48rem 1.25rem;
+      border-top: 1px solid rgba(214, 238, 233, .1);
+    }
+
+    .clean-list li:first-child { border-top: 0; }
+
+    .clean-list li::before {
+      content: "";
+      position: absolute;
+      top: 1.12rem;
+      left: .1rem;
+      width: .42rem;
+      height: .42rem;
+      border-radius: 50%;
+      background: var(--green);
+    }
+
+    .pill-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: .6rem;
+      margin-top: 1rem;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      min-height: 2.2rem;
+      padding: .45rem .78rem;
+      border: 1px solid rgba(181, 242, 213, .28);
+      border-radius: 999px;
+      color: #dff8eb;
+      background: rgba(85, 211, 154, .08);
+      font-size: clamp(.74rem, 1.15vw, .86rem);
+      font-weight: 750;
+    }
+
+    .callout {
+      max-width: 76ch;
+      padding: 1rem 1.2rem;
+      border-left: 4px solid var(--amber);
+      border-radius: .25rem .85rem .85rem .25rem;
+      color: #f9e6c0;
+      background: rgba(245, 189, 100, .09);
+    }
+
+    .architecture {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: .75rem;
+      align-items: stretch;
+    }
+
+    .layer {
+      min-height: 14.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: .55rem;
+      padding: 1.15rem;
+      border: 1px solid var(--line);
+      border-top: 4px solid var(--tone, var(--green));
+      border-radius: 1rem;
+      background: rgba(10, 43, 55, .78);
+    }
+
+    .layer strong { font-size: clamp(1rem, 1.7vw, 1.3rem); }
+    .layer p { color: #bfd1d0; font-size: clamp(.79rem, 1.15vw, .93rem); }
+    .layer .tag { margin-top: auto; color: var(--tone, var(--green)); font-weight: 850; }
+
+    .table-wrap {
+      width: 100%;
+      overflow-x: auto;
+      border: 1px solid var(--line);
+      border-radius: 1rem;
+      background: rgba(8, 35, 45, .66);
+    }
+
+    table {
+      width: 100%;
+      min-width: 760px;
+      border-collapse: collapse;
+    }
+
+    th, td {
+      padding: .72rem .9rem;
+      border-bottom: 1px solid var(--line);
+      text-align: left;
+      vertical-align: top;
+    }
+
+    th {
+      color: var(--green-soft);
+      background: rgba(23, 80, 100, .4);
+      font-size: clamp(.76rem, 1.2vw, .88rem);
+      letter-spacing: .055em;
+      text-transform: uppercase;
+    }
+
+    tbody tr:last-child td { border-bottom: 0; }
+
+    .verb {
+      display: inline-block;
+      min-width: 4.9rem;
+      padding: .25rem .52rem;
+      border-radius: 999px;
+      color: #09242d;
+      background: var(--green-soft);
+      font-size: .72rem;
+      font-weight: 900;
+      letter-spacing: .04em;
+      text-align: center;
+      text-transform: uppercase;
+    }
+
+    .verb.alter { background: var(--blue); }
+    .verb.revoke { background: var(--amber); }
+    .verb.keep { color: var(--ink); background: #526c72; }
+
+    .flow {
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      gap: .65rem;
+      counter-reset: flow;
+    }
+
+    .flow > div {
+      position: relative;
+      min-height: 9.3rem;
+      padding: 1rem .8rem;
+      border: 1px solid var(--line);
+      border-radius: 1rem;
+      background: rgba(16, 55, 68, .7);
+      counter-increment: flow;
+    }
+
+    .flow > div::before {
+      content: counter(flow, decimal-leading-zero);
+      display: block;
+      margin-bottom: .7rem;
+      color: var(--amber);
+      font-size: .78rem;
+      font-weight: 900;
+      letter-spacing: .1em;
+    }
+
+    .flow > div::after {
+      content: "→";
+      position: absolute;
+      z-index: 2;
+      top: 42%;
+      right: -.67rem;
+      color: var(--green);
+      font-weight: 900;
+    }
+
+    .flow > div:last-child::after { content: ""; }
+
+    .roles {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: .8rem;
+    }
+
+    .role {
+      padding: 1rem;
+      border-left: 3px solid var(--tone, var(--green));
+      background: rgba(16, 55, 68, .58);
+      border-radius: .25rem .8rem .8rem .25rem;
+    }
+
+    .role p { margin-bottom: 0; color: #bdd0cf; font-size: clamp(.81rem, 1.2vw, .95rem); }
+
+    .metric {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: .15rem .9rem;
+      align-items: center;
+    }
+
+    .metric .badge {
+      grid-row: span 2;
+      width: 2.8rem;
+      height: 2.8rem;
+      display: grid;
+      place-items: center;
+      border: 1px solid rgba(85, 211, 154, .4);
+      border-radius: .8rem;
+      color: var(--green-soft);
+      background: rgba(85, 211, 154, .09);
+      font-weight: 900;
+    }
+
+    .metric strong { color: #fff; }
+    .metric span:last-child { color: var(--muted); font-size: clamp(.77rem, 1.15vw, .9rem); }
+
+    .timeline {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: .8rem;
+    }
+
+    .phase {
+      padding: 1.1rem;
+      border-top: 3px solid var(--tone, var(--green));
+      border-radius: 0 0 1rem 1rem;
+      background: rgba(16, 55, 68, .62);
+    }
+
+    .phase p { color: #bfd0cf; font-size: clamp(.8rem, 1.15vw, .94rem); }
+
+    .source-list {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: .55rem 1rem;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .source-list a {
+      min-height: 3rem;
+      display: block;
+      padding: .68rem .78rem;
+      border: 1px solid var(--line);
+      border-radius: .65rem;
+      color: #d9f5e8;
+      background: rgba(16, 55, 68, .52);
+      font-size: clamp(.76rem, 1.15vw, .9rem);
+      font-weight: 700;
+      text-decoration-thickness: 1px;
+    }
+
+    .source-list a:hover { background: var(--navy-700); }
+
+    .cover-mark {
+      width: clamp(4rem, 8vw, 6.5rem);
+      height: .55rem;
+      margin-bottom: 1rem;
+      border-radius: 999px;
+      background: linear-gradient(90deg, var(--green) 0 54%, var(--amber) 54% 72%, var(--blue) 72%);
+    }
+
+    .cover-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: .7rem 1.5rem;
+      padding-top: 1rem;
+      border-top: 1px solid var(--line);
+      color: var(--muted);
+      font-size: clamp(.78rem, 1.3vw, .95rem);
+    }
+
+    .controls {
+      position: fixed;
+      z-index: 45;
+      right: max(1rem, env(safe-area-inset-right));
+      bottom: max(.8rem, env(safe-area-inset-bottom));
+      left: max(1rem, env(safe-area-inset-left));
+      min-height: 3.55rem;
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      align-items: center;
+      gap: .75rem;
+      width: min(calc(100% - 2rem), 38rem);
+      margin-inline: auto;
+      padding: .48rem;
+      border: 1px solid rgba(214, 238, 233, .2);
+      border-radius: 999px;
+      background: rgba(4, 20, 27, .9);
+      box-shadow: 0 10px 35px rgba(0, 0, 0, .32);
+      backdrop-filter: blur(14px);
+    }
+
+    .control-group { display: flex; gap: .35rem; }
+
+    .control-button {
+      min-width: 2.75rem;
+      min-height: 2.75rem;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: .55rem .75rem;
+      border: 1px solid rgba(214, 238, 233, .18);
+      border-radius: 999px;
+      color: var(--ink);
+      background: var(--navy-800);
+      font: inherit;
+      font-weight: 850;
+      cursor: pointer;
+    }
+
+    .control-button:hover:not(:disabled) { background: var(--navy-700); }
+    .control-button:disabled { opacity: .38; cursor: not-allowed; }
+
+    .counter {
+      color: var(--muted);
+      font-size: .82rem;
+      font-variant-numeric: tabular-nums;
+      font-weight: 800;
+      letter-spacing: .05em;
+      text-align: center;
+    }
+
+    .live-status {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      margin: -1px;
+      padding: 0;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
+    }
+
+    @media (max-width: 900px) {
+      .architecture { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .architecture .layer:first-child { grid-column: 1 / -1; min-height: auto; }
+      .flow { grid-template-columns: repeat(3, 1fr); }
+      .flow > div:nth-child(3)::after { content: ""; }
+      .roles { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .timeline { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+
+    @media (max-width: 760px) {
+      :root { --status-height: 3.2rem; --controls-height: 4.3rem; }
+      .slide {
+        padding-top: calc(var(--status-height) + 1.45rem);
+        padding-bottom: calc(var(--controls-height) + 1.2rem);
+      }
+      .slide-inner { justify-content: flex-start; }
+      .grid, .architecture, .flow, .roles, .timeline, .source-list {
+        grid-template-columns: 1fr;
+      }
+      .grid > *, .architecture > *, .roles > * { grid-column: 1 !important; }
+      .layer { min-height: auto; }
+      .flow > div { min-height: auto; }
+      .flow > div::after { content: "↓" !important; top: auto; right: 50%; bottom: -.76rem; }
+      .flow > div:last-child::after { content: "" !important; }
+      .table-wrap { border-radius: .7rem; }
+      .controls { grid-template-columns: auto 1fr auto; gap: .35rem; }
+      .control-button { min-width: 2.8rem; padding-inline: .6rem; }
+      #printButton { display: none; }
+    }
+
+    @media (max-width: 380px) {
+      .proposal-status { padding-right: 1rem; }
+      .control-button .button-label { display: none; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        scroll-behavior: auto !important;
+        transition-duration: .001ms !important;
+        animation-duration: .001ms !important;
+        animation-iteration-count: 1 !important;
+      }
+    }
+
+    @media (prefers-contrast: more) {
+      :root { --line: rgba(255, 255, 255, .55); --muted: #d4e4e2; }
+      .card, .layer, .role, .phase { border-color: var(--line); }
+    }
+
+    @page { size: A4 landscape; margin: 8mm; }
+
+    @media print {
+      :root { color-scheme: light; }
+      html, body {
+        width: auto;
+        min-height: 0;
+        color: #102d37;
+        background: #fff !important;
+        overflow: visible;
+      }
+      .skip-link, .proposal-status, .progress-track, .controls, .live-status { display: none !important; }
+      .deck { min-height: 0; }
+      .slide, .slide[hidden] {
+        display: block !important;
+        width: 100%;
+        min-height: 190mm;
+        height: 190mm;
+        padding: 11mm 12mm 15mm;
+        overflow: hidden;
+        break-after: page;
+        page-break-after: always;
+        color: #102d37;
+        background: #fff !important;
+      }
+      .slide:last-child { break-after: auto; page-break-after: auto; }
+      .slide::before { background: #18845f; }
+      .slide::after {
+        content: "Proposta técnica em elaboração — não constitui ato oficial";
+        position: absolute;
+        right: 12mm;
+        bottom: 4mm;
+        left: 12mm;
+        padding-top: 2mm;
+        border-top: .3mm solid #d6e2df;
+        color: #536b6d;
+        font-size: 8pt;
+        font-weight: 700;
+        text-align: center;
+      }
+      .slide-inner { width: 100%; min-height: 100%; gap: 4mm; }
+      h1 { font-size: 38pt; color: #08232d; }
+      h2 { font-size: 28pt; color: #08232d; }
+      h3 { color: #08232d; font-size: 12pt; }
+      p, li, td, th, dd, dt { color: #173a43; font-size: 9pt; line-height: 1.35; }
+      .lead { color: #274c54; font-size: 12pt; }
+      .eyebrow, .accent { color: #146c50; }
+      .accent-amber { color: #8b5b08; }
+      .muted { color: #536b6d; }
+      .card, .layer, .role, .phase, .table-wrap, .source-list a {
+        color: #102d37;
+        background: #f4f8f7 !important;
+        border-color: #c8d8d5;
+        box-shadow: none;
+      }
+      .layer p, .role p, .phase p { color: #385a60; }
+      .callout { color: #694609; background: #fff8e8; }
+      .clean-list li { border-color: #dbe7e4; }
+      th { color: #135f49; background: #e8f2ef; }
+      td { color: #193a42; }
+      a { color: #105e78; }
+      .source-list { gap: 2mm 4mm; }
+      .source-list a { min-height: 0; padding: 2mm 3mm; font-size: 8pt; }
+      .cover-meta { color: #536b6d; border-color: #d6e2df; }
+    }
+  </style>
+</head>
+<body>
+  <a class="skip-link" href="#slide-1">Ir para o conteúdo da apresentação</a>
+
+  <div class="proposal-status" role="note">
+    Proposta técnica em elaboração — não constitui ato oficial
+  </div>
+  <div class="progress-track" role="progressbar" aria-label="Progresso da apresentação" aria-valuemin="1" aria-valuemax="16" aria-valuenow="1">
+    <div class="progress-fill"></div>
+  </div>
+
+  <main class="deck" id="deck" aria-label="Apresentação sobre a governança da ENAJU">
+    <section class="slide" id="slide-1" role="group" aria-roledescription="lâmina" aria-label="1 de 16: Governança ENAJU">
+      <div class="slide-inner">
+        <div>
+          <div class="cover-mark" aria-hidden="true"></div>
+          <p class="eyebrow">ENAJU · arquitetura institucional</p>
+          <h1 tabindex="-1">Governança que transforma formação em capacidade</h1>
+          <p class="lead">Proposta de pacote normativo integrado para a Política Nacional de Formação e Aperfeiçoamento dos Servidores do Poder Judiciário e o Plano Nacional 2027–2032.</p>
+        </div>
+        <div class="cover-meta">
+          <span>Arquitetura normativa</span>
+          <span>Governança em rede</span>
+          <span>Aprendizagem orientada a resultados</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="slide" id="slide-2" role="group" aria-roledescription="lâmina" aria-label="2 de 16: Decisão executiva" hidden>
+      <div class="slide-inner">
+        <header>
+          <p class="eyebrow">Síntese executiva</p>
+          <h2 tabindex="-1">Uma arquitetura, cinco instrumentos</h2>
+        </header>
+        <div class="grid">
+          <article class="card green col-4">
+            <span class="number">01</span>
+            <h3>Resolução plenária</h3>
+            <p>Consolida a política nacional, incorpora o Plano 2027–2032, promove ajustes de coerência e revoga expressamente os atos substituídos.</p>
+          </article>
+          <article class="card blue col-4">
+            <span class="number blue">02</span>
+            <h3>Regimento atualizado</h3>
+            <p>A Portaria Presidência nº 257/2026 já aprovou estrutura e Regimento. A proposta é uma portaria alteradora, não um segundo regulamento.</p>
+          </article>
+          <article class="card amber col-4">
+            <span class="number amber">03</span>
+            <h3>Operação integrada</h3>
+            <p>Uma instrução altera a IN nº 112/2026; o PPI orienta o desenho educacional; o GT é encerrado por comunicação e relatório.</p>
+          </article>
+        </div>
+        <p class="callout"><strong>Resultado pretendido:</strong> cada tema no tipo de ato e na instância competentes, com uma única cadeia de planejamento, execução, avaliação e melhoria.</p>
+      </div>
+    </section>
+
+    <section class="slide" id="slide-3" role="group" aria-roledescription="lâmina" aria-label="3 de 16: Base institucional vigente" hidden>
+      <div class="slide-inner">
+        <header>
+          <p class="eyebrow">Ponto de partida verificado</p>
+          <h2 tabindex="-1">A ENAJU já tem fundamento e Regimento</h2>
+        </header>
+        <div class="grid">
+          <article class="card green col-6">
+            <span class="number">643</span>
+            <h3>Resolução CNJ nº 643/2025</h3>
+            <ul class="clean-list">
+              <li>Tem <strong>7 artigos</strong>.</li>
+              <li>Transforma o CEAJud em Escola Nacional do Judiciário.</li>
+              <li>Define a ENAJU como órgão central do sistema nacional de formação de servidores.</li>
+              <li>Seu art. 5º remete estrutura e Regimento a ato da Presidência.</li>
+            </ul>
+          </article>
+          <article class="card blue col-6">
+            <span class="number blue">257</span>
+            <h3>Portaria Presidência nº 257/2026</h3>
+            <ul class="clean-list">
+              <li>Aprova a estrutura organizacional da Escola.</li>
+              <li>Aprova o Regimento Interno como anexo.</li>
+              <li>Institui Conselho Superior, Diretoria-Geral, Diretoria Executiva, unidades e Rede de Escolas.</li>
+              <li>Já distribui competências estratégicas, pedagógicas e operacionais.</li>
+            </ul>
+          </article>
+        </div>
+        <p class="callout">A revisão parte do texto vigente: preserva o que já foi instituído e altera apenas o necessário para completar a governança.</p>
+      </div>
+    </section>
+
+    <section class="slide" id="slide-4" role="group" aria-roledescription="lâmina" aria-label="4 de 16: Problema de governança" hidden>
+      <div class="slide-inner">
+        <header>
+          <p class="eyebrow">Questão de desenho</p>
+          <h2 tabindex="-1">Da formação isolada ao ciclo de capacidade</h2>
+        </header>
+        <div class="grid">
+          <article class="card amber col-5">
+            <h3>O que precisa ser superado</h3>
+            <ul class="clean-list">
+              <li>Atos sobrepostos para objetos semelhantes.</li>
+              <li>Planejamento de cursos desconectado de problemas institucionais.</li>
+              <li>Métricas concentradas em oferta, carga horária e satisfação.</li>
+              <li>Responsabilidades nacionais e locais pouco encadeadas.</li>
+            </ul>
+          </article>
+          <article class="card green col-7">
+            <h3>O que a proposta organiza</h3>
+            <p class="lead">Política judiciária <span class="accent">→</span> capacidades necessárias <span class="accent">→</span> aprendizagem <span class="accent">→</span> aplicação no trabalho <span class="accent">→</span> resultado institucional <span class="accent">→</span> evidência para decidir.</p>
+            <div class="pill-row" aria-label="Princípios do desenho">
+              <span class="pill">subsidiariedade</span>
+              <span class="pill">cooperação</span>
+              <span class="pill">acessibilidade</span>
+              <span class="pill">transparência</span>
+              <span class="pill">proteção de dados</span>
+              <span class="pill">melhoria contínua</span>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="slide" id="slide-5" role="group" aria-roledescription="lâmina" aria-label="5 de 16: Arquitetura normativa" hidden>
+      <div class="slide-inner">
+        <header>
+          <p class="eyebrow">Mapa dos instrumentos</p>
+          <h2 tabindex="-1">Cada decisão no seu nível normativo</h2>
+        </header>
+        <div class="architecture" aria-label="Arquitetura normativa em cinco camadas">
+          <article class="layer" style="--tone: var(--green)">
+            <strong>Política + Plano</strong>
+            <p>Direitos, deveres, governança nacional, ciclo de resultados e prioridades 2027–2032.</p>
+            <span class="tag">Resolução · Plenário</span>
+          </article>
+          <article class="layer" style="--tone: var(--blue)">
+            <strong>Regimento</strong>
+            <p>Ajustes pontuais de competência, aprovação, monitoramento e articulação em rede.</p>
+            <span class="tag">Portaria alteradora</span>
+          </article>
+          <article class="layer" style="--tone: var(--amber)">
+            <strong>Processo</strong>
+            <p>Integra capacidades e ações formativas ao planejamento e à gestão das políticas judiciárias.</p>
+            <span class="tag">Alteração da IN 112</span>
+          </article>
+          <article class="layer" style="--tone: var(--green-soft)">
+            <strong>PPI</strong>
+            <p>Concepção pedagógica, metodologia, avaliação, acessibilidade e padrões de qualidade.</p>
+            <span class="tag">Ato de aprovação</span>
+          </article>
+          <article class="layer" style="--tone: var(--blue)">
+            <strong>Encerramento do GT</strong>
+            <p>Comunicação às unidades competentes acompanhada do relatório final.</p>
+            <span class="tag">Providência não normativa</span>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="slide" id="slide-6" role="group" aria-roledescription="lâmina" aria-label="6 de 16: Conteúdo da resolução" hidden>
+      <div class="slide-inner">
+        <header>
+          <p class="eyebrow">Peça estruturante</p>
+          <h2 tabindex="-1">O que a nova Resolução deve conter</h2>
+        </header>
+        <div class="grid">
+          <article class="card green col-4">
+            <h3>Núcleo da política</h3>
+            <ul class="clean-list">
+              <li>Finalidade, alcance e conceitos.</li>
+              <li>Princípios e diretrizes.</li>
+              <li>Responsabilidades da ENAJU, dos tribunais e da Rede.</li>
+            </ul>
+          </article>
+          <article class="card blue col-4">
+            <h3>Ciclo de gestão</h3>
+            <ul class="clean-list">
+              <li>Diagnóstico e priorização de capacidades.</li>
+              <li>Planejamento, execução e cooperação.</li>
+              <li>Avaliação, transparência e revisão.</li>
+            </ul>
+          </article>
+          <article class="card amber col-4">
+            <h3>Regras de suporte</h3>
+            <ul class="clean-list">
+              <li>Acessibilidade e diversidade.</li>
+              <li>Dados, tecnologia e integridade.</li>
+              <li>Recursos educacionais e direitos autorais.</li>
+            </ul>
+          </article>
+          <article class="card col-12">
+            <h3>Anexo normativo: Plano Nacional 2027–2032</h3>
+            <p>O plano integra a própria Resolução porque orienta nacionalmente os tribunais. Planos anuais operacionais desdobram prioridades, iniciativas, indicadores e metas sem criar uma política paralela.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="slide" id="slide-7" role="group" aria-roledescription="lâmina" aria-label="7 de 16: Tratamento dos atos" hidden>
+      <div class="slide-inner">
+        <header>
+          <p class="eyebrow">Técnica legislativa</p>
+          <h2 tabindex="-1">Criar, alterar, revogar ou manter</h2>
+        </header>
+        <div class="table-wrap" tabindex="0" aria-label="Tabela de tratamento dos atos normativos">
+          <table>
+            <thead>
+              <tr><th>Tratamento</th><th>Ato</th><th>Efeito proposto</th></tr>
+            </thead>
+            <tbody>
+              <tr><td><span class="verb">Criar</span></td><td>Nova Resolução</td><td>Política nacional consolidada e Plano 2027–2032 em anexo.</td></tr>
+              <tr><td><span class="verb alter">Alterar</span></td><td>Resoluções nº 159/2012 e nº 347/2020</td><td>Remissões e interfaces pontuais, sem deslocar competências próprias de outras escolas ou políticas.</td></tr>
+              <tr><td><span class="verb revoke">Revogar</span></td><td>Resoluções nº 192/2014 e nº 246/2018</td><td>Revogação expressa porque seu conteúdo é absorvido e atualizado no novo texto.</td></tr>
+              <tr><td><span class="verb alter">Alterar</span></td><td>Portaria Presidência nº 257/2026</td><td>Complementa o Regimento vigente; não duplica estrutura ou competências.</td></tr>
+              <tr><td><span class="verb alter">Alterar</span></td><td>Instrução Normativa nº 112/2026</td><td>Insere a dimensão de capacidades no ciclo de gestão das políticas judiciárias.</td></tr>
+              <tr><td><span class="verb keep">Manter</span></td><td>Resoluções nº 643/2025, nº 692/2026 e atos correlatos</td><td>Preserva fundamento institucional, estratégia e regras compatíveis.</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="small muted">A redação final deve trazer cláusulas expressas de alteração e revogação e conferir todas as remissões antes da submissão.</p>
+      </div>
+    </section>
+
+    <section class="slide" id="slide-8" role="group" aria-roledescription="lâmina" aria-label="8 de 16: Modelo de governança" hidden>
+      <div class="slide-inner">
+        <header>
+          <p class="eyebrow">Responsabilidade clara</p>
+          <h2 tabindex="-1">Governança nacional, execução em rede</h2>
+        </header>
+        <div class="roles">
+          <article class="role" style="--tone: var(--green)">
+            <h3>Plenário do CNJ</h3>
+            <p>Aprova a política nacional e o plano plurianual de alcance externo.</p>
+          </article>
+          <article class="role" style="--tone: var(--amber)">
+            <h3>Presidência</h3>
+            <p>Veicula atos internos de estrutura, Regimento e procedimentos.</p>
+          </article>
+          <article class="role" style="--tone: var(--blue)">
+            <h3>Conselho Superior</h3>
+            <p>Delibera sobre diretrizes estratégicas, acadêmicas e pedagógicas da Escola.</p>
+          </article>
+          <article class="role" style="--tone: var(--green)">
+            <h3>Diretoria-Geral</h3>
+            <p>Conduz a estratégia e submete propostas à instância competente.</p>
+          </article>
+          <article class="role" style="--tone: var(--blue)">
+            <h3>Diretoria Executiva</h3>
+            <p>Converte diretrizes em programas, portfólio, operação e evidências.</p>
+          </article>
+          <article class="role" style="--tone: var(--amber)">
+            <h3>Rede e tribunais</h3>
+            <p>Cooperam, contextualizam, executam, compartilham recursos e reportam resultados.</p>
+          </article>
+        </div>
+        <p class="callout">A autonomia local é preservada; a coordenação nacional concentra padrões, prioridades comuns, cooperação e evidências comparáveis.</p>
+      </div>
+    </section>
+
+    <section class="slide" id="slide-9" role="group" aria-roledescription="lâmina" aria-label="9 de 16: Ciclo de gestão" hidden>
+      <div class="slide-inner">
+        <header>
+          <p class="eyebrow">Modelo operacional</p>
+          <h2 tabindex="-1">Um ciclo contínuo de capacidade e resultado</h2>
+        </header>
+        <div class="flow" aria-label="Ciclo de gestão em seis etapas">
+          <div><h3>Diagnosticar</h3><p>Problema, público, contexto e lacuna de capacidade.</p></div>
+          <div><h3>Priorizar</h3><p>Critérios nacionais, evidência e viabilidade.</p></div>
+          <div><h3>Desenhar</h3><p>Resultado esperado, percurso e avaliação.</p></div>
+          <div><h3>Executar</h3><p>Rede, acessibilidade e recursos compartilhados.</p></div>
+          <div><h3>Avaliar</h3><p>Aprendizagem, aplicação e resultado.</p></div>
+          <div><h3>Aprender</h3><p>Transparência, revisão e nova decisão.</p></div>
+        </div>
+        <p class="lead">A alteração da IN nº 112/2026 conecta esse ciclo ao planejamento, monitoramento e avaliação das políticas judiciárias.</p>
+      </div>
+    </section>
+
+    <section class="slide" id="slide-10" role="group" aria-roledescription="lâmina" aria-label="10 de 16: Projeto Pedagógico Institucional" hidden>
+      <div class="slide-inner">
+        <header>
+          <p class="eyebrow">PPI ENAJU</p>
+          <h2 tabindex="-1">Coerência pedagógica para toda a Escola</h2>
+        </header>
+        <div class="grid">
+          <article class="card green col-6">
+            <h3>Concepção</h3>
+            <ul class="clean-list">
+              <li>Aprendizagem de adultos e experiência profissional.</li>
+              <li>Prática–teoria–prática e aprendizagem significativa.</li>
+              <li>Desenvolvimento de competências individuais, coletivas e institucionais.</li>
+              <li>Mediação, colaboração e autonomia do participante.</li>
+            </ul>
+          </article>
+          <article class="card blue col-6">
+            <h3>Padrão de qualidade</h3>
+            <ul class="clean-list">
+              <li>Objetivos observáveis e alinhados ao problema.</li>
+              <li>Desenho universal, acessibilidade e inclusão.</li>
+              <li>Uso ético, seguro e crítico de dados e tecnologias.</li>
+              <li>Avaliação proporcional ao risco e ao efeito esperado.</li>
+            </ul>
+          </article>
+          <article class="card amber col-12">
+            <h3>Governança do PPI</h3>
+            <p>O Regimento deve deixar inequívoco o percurso de proposição, deliberação, aprovação, revisão e publicidade do Projeto, preservando as competências do Conselho Superior e da Presidência.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="slide" id="slide-11" role="group" aria-roledescription="lâmina" aria-label="11 de 16: Plano Nacional 2027 a 2032" hidden>
+      <div class="slide-inner">
+        <header>
+          <p class="eyebrow">Horizonte comum</p>
+          <h2 tabindex="-1">Plano Nacional 2027–2032</h2>
+        </header>
+        <div class="grid">
+          <article class="card green col-4"><h3>Direitos e qualidade</h3><p>Capacidades para serviços acessíveis, efetivos, céleres e centrados nas pessoas.</p></article>
+          <article class="card blue col-4"><h3>Digital, dados e IA</h3><p>Uso responsável de tecnologia, inteligência artificial, dados e segurança cibernética.</p></article>
+          <article class="card amber col-4"><h3>Governança e gestão</h3><p>Liderança, integridade, estratégia, orçamento, processos e entrega de valor.</p></article>
+          <article class="card blue col-4"><h3>Pessoas e ambientes</h3><p>Saúde, diversidade, inclusão, desenvolvimento de equipes e trabalho sustentável.</p></article>
+          <article class="card green col-4"><h3>Inovação e cooperação</h3><p>Redes de aprendizagem, pesquisa aplicada e difusão de soluções reutilizáveis.</p></article>
+          <article class="card amber col-4"><h3>Sustentabilidade</h3><p>Capacidades para responsabilidade socioambiental e contratações sustentáveis.</p></article>
+        </div>
+        <p class="small muted">Eixos propostos em alinhamento à Estratégia Nacional do Poder Judiciário; metas e linhas de base são definidas a partir de diagnóstico validado.</p>
+      </div>
+    </section>
+
+    <section class="slide" id="slide-12" role="group" aria-roledescription="lâmina" aria-label="12 de 16: Evidência e prestação de contas" hidden>
+      <div class="slide-inner">
+        <header>
+          <p class="eyebrow">Valor público demonstrável</p>
+          <h2 tabindex="-1">Medir do acesso ao resultado</h2>
+        </header>
+        <div class="grid">
+          <article class="card col-6"><div class="metric"><span class="badge">1</span><strong>Alcance e equidade</strong><span>Participação, cobertura, acessibilidade e distribuição entre públicos.</span></div></article>
+          <article class="card col-6"><div class="metric"><span class="badge">2</span><strong>Experiência</strong><span>Relevância percebida, engajamento e condições de aprendizagem.</span></div></article>
+          <article class="card col-6"><div class="metric"><span class="badge">3</span><strong>Aprendizagem</strong><span>Evolução de conhecimentos, habilidades e atitudes.</span></div></article>
+          <article class="card col-6"><div class="metric"><span class="badge">4</span><strong>Aplicação</strong><span>Transferência para o trabalho e mudança de práticas.</span></div></article>
+          <article class="card col-6"><div class="metric"><span class="badge">5</span><strong>Resultado institucional</strong><span>Contribuição plausível para desempenho e valor público.</span></div></article>
+          <article class="card col-6"><div class="metric"><span class="badge">6</span><strong>Capacidade da rede</strong><span>Cooperação, recursos reutilizados e maturidade de gestão.</span></div></article>
+        </div>
+        <p class="callout">Nem toda ação exige todos os níveis. O desenho avaliativo deve ser proporcional à relevância, ao custo, ao risco e ao efeito pretendido.</p>
+      </div>
+    </section>
+
+    <section class="slide" id="slide-13" role="group" aria-roledescription="lâmina" aria-label="13 de 16: Ajustes nas resoluções 159 e 347" hidden>
+      <div class="slide-inner">
+        <header>
+          <p class="eyebrow">Compatibilidade do sistema</p>
+          <h2 tabindex="-1">Ajustes cirúrgicos nas interfaces</h2>
+        </header>
+        <div class="grid">
+          <article class="card blue col-6">
+            <span class="number blue">159</span>
+            <h3>Formação no Poder Judiciário</h3>
+            <p>Atualizar as referências ao antigo CEAJud, reconhecer o papel sistêmico da ENAJU na formação de servidores e preservar as competências próprias da ENFAM, da ENAMAT e das escolas da magistratura.</p>
+          </article>
+          <article class="card amber col-6">
+            <span class="number amber">347</span>
+            <h3>Governança das contratações</h3>
+            <p>Alinhar as ações de desenvolvimento para contratações à política nacional, ao planejamento por capacidades e à cooperação em rede, sem substituir a governança temática existente.</p>
+          </article>
+        </div>
+        <p class="lead">A regra é <strong>mudar somente o necessário</strong>: remissões exatas, linguagem coerente e nenhuma ampliação implícita de competência.</p>
+      </div>
+    </section>
+
+    <section class="slide" id="slide-14" role="group" aria-roledescription="lâmina" aria-label="14 de 16: Encerramento do grupo de trabalho" hidden>
+      <div class="slide-inner">
+        <header>
+          <p class="eyebrow">Providência conclusiva</p>
+          <h2 tabindex="-1">O GT 362 se encerra com comunicação e relatório</h2>
+        </header>
+        <div class="grid">
+          <article class="card green col-7">
+            <h3>Rito aplicável</h3>
+            <p class="lead">A Instrução Normativa nº 107/2025 prevê a comunicação do encerramento às unidades competentes e à unidade de gestão estratégica, acompanhada de relatório final.</p>
+            <p>O produto estrutural do grupo já se materializou na Portaria Presidência nº 257/2026, que aprovou a estrutura e o Regimento da ENAJU.</p>
+          </article>
+          <article class="card amber col-5">
+            <h3>Conteúdo do fechamento</h3>
+            <ul class="clean-list">
+              <li>Objeto e atividades realizadas.</li>
+              <li>Produtos entregues.</li>
+              <li>Resultados e recomendações.</li>
+              <li>Registro da comunicação.</li>
+            </ul>
+          </article>
+        </div>
+        <p class="callout"><strong>Consequência:</strong> não é necessário criar um novo ato normativo apenas para declarar o encerramento ordinário do grupo.</p>
+      </div>
+    </section>
+
+    <section class="slide" id="slide-15" role="group" aria-roledescription="lâmina" aria-label="15 de 16: Sequência de implementação" hidden>
+      <div class="slide-inner">
+        <header>
+          <p class="eyebrow">Implementação segura</p>
+          <h2 tabindex="-1">Da validação jurídica ao primeiro ciclo</h2>
+        </header>
+        <div class="timeline" aria-label="Sequência de implementação em quatro fases">
+          <article class="phase" style="--tone: var(--green)"><span class="number">A</span><h3>Consistência</h3><p>Conferir competência, técnica legislativa, remissões, impactos e aderência ao acervo vigente.</p></article>
+          <article class="phase" style="--tone: var(--amber)"><span class="number amber">B</span><h3>Participação</h3><p>Submeter a nova política ao rito de consulta e às manifestações técnicas cabíveis.</p></article>
+          <article class="phase" style="--tone: var(--blue)"><span class="number blue">C</span><h3>Aprovação</h3><p>Encaminhar cada peça à instância competente e publicar o conjunto com ordem lógica.</p></article>
+          <article class="phase" style="--tone: var(--green)"><span class="number">D</span><h3>Operação</h3><p>Estabelecer linha de base, desdobrar o plano anual, apoiar a Rede e monitorar resultados.</p></article>
+        </div>
+        <div class="grid">
+          <article class="card green col-6"><h3>Controle de qualidade</h3><p>Quadro comparativo artigo a artigo, teste de remissões, matriz de responsabilidades e versão consolidada para leitura final.</p></article>
+          <article class="card blue col-6"><h3>Transparência</h3><p>Publicação dos atos, do PPI, do plano, dos critérios de priorização e dos resultados em linguagem acessível.</p></article>
+        </div>
+      </div>
+    </section>
+
+    <section class="slide" id="slide-16" role="group" aria-roledescription="lâmina" aria-label="16 de 16: Fontes oficiais" hidden>
+      <div class="slide-inner">
+        <header>
+          <p class="eyebrow">Base documental</p>
+          <h2 tabindex="-1">Fontes oficiais consultadas</h2>
+          <p class="lead">Links para o repositório de atos normativos do Conselho Nacional de Justiça.</p>
+        </header>
+        <ul class="source-list">
+          <li><a href="https://atos.cnj.jus.br/atos/detalhar/6313">Resolução CNJ nº 643/2025 · instituição da ENAJU</a></li>
+          <li><a href="https://atos.cnj.jus.br/atos/detalhar/1417">Portaria Presidência nº 257/2026 · estrutura e Regimento</a></li>
+          <li><a href="https://atos.cnj.jus.br/atos/detalhar/6824">Instrução Normativa nº 112/2026 · políticas judiciárias</a></li>
+          <li><a href="https://atos.cnj.jus.br/atos/detalhar/6224">Instrução Normativa nº 107/2025 · colegiados e encerramento</a></li>
+          <li><a href="https://atos.cnj.jus.br/atos/detalhar/972">Resolução CNJ nº 159/2012 · formação no Judiciário</a></li>
+          <li><a href="https://atos.cnj.jus.br/atos/detalhar/3518">Resolução CNJ nº 347/2020 · governança das contratações</a></li>
+          <li><a href="https://atos.cnj.jus.br/atos/detalhar/2012">Resolução CNJ nº 192/2014 · política vigente a consolidar</a></li>
+          <li><a href="https://atos.cnj.jus.br/atos/detalhar/atos-normativos?documento=2580">Resolução CNJ nº 246/2018 · alterações da Resolução nº 192</a></li>
+          <li><a href="https://atos.cnj.jus.br/atos/detalhar/6410">Resolução CNJ nº 655/2025 · elaboração de atos normativos</a></li>
+          <li><a href="https://atos.cnj.jus.br/atos/detalhar/1054">Resolução CNJ nº 692/2026 · Estratégia Nacional 2027–2032</a></li>
+        </ul>
+        <p class="small muted">Conteúdo de caráter propositivo. A redação das minutas permanece sujeita à análise das unidades competentes e à deliberação das instâncias previstas nos atos vigentes.</p>
+      </div>
+    </section>
+  </main>
+
+  <nav class="controls" aria-label="Controles da apresentação">
+    <div class="control-group">
+      <button class="control-button" id="previousButton" type="button" aria-label="Lâmina anterior" disabled>
+        <span aria-hidden="true">←</span>
+      </button>
+      <button class="control-button" id="nextButton" type="button" aria-label="Próxima lâmina">
+        <span aria-hidden="true">→</span>
+      </button>
+    </div>
+    <span class="counter" id="counter" aria-hidden="true">01 / 16</span>
+    <button class="control-button" id="printButton" type="button" aria-label="Imprimir ou salvar como PDF">
+      <span aria-hidden="true">⎙&nbsp;</span><span class="button-label">PDF</span>
+    </button>
+  </nav>
+
+  <p class="live-status" id="liveStatus" aria-live="polite" aria-atomic="true">Lâmina 1 de 16: Governança ENAJU</p>
+
+  <script>
+    (() => {
+      "use strict";
+
+      const slides = Array.from(document.querySelectorAll(".slide"));
+      const previousButton = document.getElementById("previousButton");
+      const nextButton = document.getElementById("nextButton");
+      const printButton = document.getElementById("printButton");
+      const counter = document.getElementById("counter");
+      const liveStatus = document.getElementById("liveStatus");
+      const progress = document.querySelector(".progress-track");
+      const progressFill = document.querySelector(".progress-fill");
+      const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+      let current = 0;
+      let touchStartX = null;
+      let touchStartY = null;
+
+      const clamp = (value) => Math.max(0, Math.min(slides.length - 1, value));
+
+      function titleFor(slide) {
+        const heading = slide.querySelector("h1, h2");
+        return heading ? heading.textContent.trim() : "Apresentação ENAJU";
+      }
+
+      function update(nextIndex, options = {}) {
+        const target = clamp(nextIndex);
+        const shouldFocus = options.focus !== false;
+        const shouldUpdateHash = options.hash !== false;
+
+        slides.forEach((slide, index) => {
+          const active = index === target;
+          slide.hidden = !active;
+          slide.setAttribute("aria-hidden", String(!active));
+        });
+
+        current = target;
+        const visible = slides[current];
+        const humanNumber = current + 1;
+        const percentage = (humanNumber / slides.length) * 100;
+
+        previousButton.disabled = current === 0;
+        nextButton.disabled = current === slides.length - 1;
+        counter.textContent = `${String(humanNumber).padStart(2, "0")} / ${slides.length}`;
+        progress.setAttribute("aria-valuenow", String(humanNumber));
+        progressFill.style.width = `${percentage}%`;
+        liveStatus.textContent = `Lâmina ${humanNumber} de ${slides.length}: ${titleFor(visible)}`;
+        document.title = `${String(humanNumber).padStart(2, "0")} · ${titleFor(visible)} · ENAJU`;
+
+        if (shouldUpdateHash && history.replaceState) {
+          history.replaceState(null, "", `#${visible.id}`);
+        }
+
+        if (shouldFocus) {
+          const heading = visible.querySelector("h1, h2");
+          if (heading) {
+            heading.focus({ preventScroll: true });
+          }
+        }
+
+        visible.scrollTo({ top: 0, behavior: reduceMotion.matches ? "auto" : "smooth" });
+      }
+
+      function indexFromHash() {
+        const match = window.location.hash.match(/^#slide-(\d+)$/);
+        return match ? clamp(Number(match[1]) - 1) : 0;
+      }
+
+      previousButton.addEventListener("click", () => update(current - 1));
+      nextButton.addEventListener("click", () => update(current + 1));
+      printButton.addEventListener("click", () => window.print());
+
+      document.addEventListener("keydown", (event) => {
+        const interactive = event.target.closest("a, button, input, textarea, select, summary");
+        if (interactive && event.key !== "Escape") return;
+
+        const nextKeys = ["ArrowRight", "PageDown"];
+        const previousKeys = ["ArrowLeft", "PageUp"];
+
+        if (nextKeys.includes(event.key) || event.key === " ") {
+          event.preventDefault();
+          update(current + 1);
+        } else if (previousKeys.includes(event.key)) {
+          event.preventDefault();
+          update(current - 1);
+        } else if (event.key === "Home") {
+          event.preventDefault();
+          update(0);
+        } else if (event.key === "End") {
+          event.preventDefault();
+          update(slides.length - 1);
+        }
+      });
+
+      document.addEventListener("touchstart", (event) => {
+        if (event.touches.length !== 1) return;
+        touchStartX = event.touches[0].clientX;
+        touchStartY = event.touches[0].clientY;
+      }, { passive: true });
+
+      document.addEventListener("touchend", (event) => {
+        if (touchStartX === null || touchStartY === null || event.changedTouches.length !== 1) return;
+        const deltaX = event.changedTouches[0].clientX - touchStartX;
+        const deltaY = event.changedTouches[0].clientY - touchStartY;
+        touchStartX = null;
+        touchStartY = null;
+
+        if (Math.abs(deltaX) < 55 || Math.abs(deltaX) <= Math.abs(deltaY) * 1.25) return;
+        update(deltaX < 0 ? current + 1 : current - 1);
+      }, { passive: true });
+
+      window.addEventListener("hashchange", () => update(indexFromHash(), { hash: false }));
+      update(indexFromHash(), { focus: false, hash: false });
+    })();
+  </script>
+</body>
+</html>
