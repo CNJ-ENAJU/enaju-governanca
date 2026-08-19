@@ -6,7 +6,8 @@ Apresentação pública e acessível da proposta técnica de arquitetura normati
 
 ## Conteúdo publicado
 
-- apresentação responsiva e autocontida;
+- apresentação responsiva e autocontida, em preto e branco;
+- versão em PDF (A4 paisagem, uma lâmina por página) em `site/apresentacao-governanca-enaju.pdf`;
 - referências para os atos oficiais no portal do CNJ; e
 - navegação por teclado, toque e gestos, com versão para impressão.
 
